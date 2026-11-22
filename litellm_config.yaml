@@ -1,0 +1,29 @@
+model_list:
+  - model_name: local-fast
+    litellm_params:
+      model: ollama/qwen2.5:3b
+      api_base: http://host.docker.internal:11434
+
+  - model_name: local-daily
+    litellm_params:
+      model: ollama/qwen3:8b
+      api_base: http://host.docker.internal:11434
+
+  - model_name: openrouter-auto
+    litellm_params:
+      model: openrouter/openrouter/auto
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  # any specific OpenRouter model the AA router picks (route "openrouter/<vendor>/<model>")
+  - model_name: openrouter/*
+    litellm_params:
+      model: openrouter/*
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  - model_name: hf-inference
+    litellm_params:
+      model: huggingface/meta-llama/Llama-3.1-8B-Instruct
+      api_key: os.environ/HF_TOKEN
+
+litellm_settings:
+  drop_params: true

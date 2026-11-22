@@ -1,0 +1,36 @@
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: litellm
+    ports:
+      - "127.0.0.1:4000:4000"
+    env_file: .env
+    volumes:
+      - ./litellm_config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    ports:
+      - "127.0.0.1:3000:8080"   # phone access goes through `tailscale serve` (tailnet-only HTTPS), not the LAN
+    environment:
+      # first-boot defaults only; Open WebUI persists these in its DB afterwards
+      - OPENAI_API_BASE_URL=http://host.docker.internal:8010/v1
+      - OPENAI_API_KEY=${ROUTER_API_KEY}
+      - ENABLE_TOOL_SERVERS=true
+      - ENABLE_OLLAMA_API=false
+      - ENABLE_SIGNUP=false
+    volumes:
+      - open-webui-data:/app/backend/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - litellm
+    restart: unless-stopped
+
+volumes:
+  open-webui-data:

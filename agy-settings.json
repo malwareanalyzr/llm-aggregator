@@ -1,0 +1,9 @@
+{
+  "toolPermission": "strict",
+  "allowNonWorkspaceAccess": false,
+  "disableSlashCommands": true,
+  "permissions": {
+    "deny": ["read_file", "write_file", "edit_file", "run_command", "search_web", "schedule",
+             "define_subagent", "invoke_subagent", "manage_subagents", "send_message", "run_workflow", "swarm"]
+  }
+}

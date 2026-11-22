@@ -1,0 +1,7 @@
+﻿fastapi
+uvicorn
+httpx
+pydantic
+mcp<2
+python-dotenv
+uv

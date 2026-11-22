@@ -1,0 +1,12 @@
+# secrets
+.env
+*.pem
+*.key
+
+# local runtime state
+.venv/
+logs/
+sandbox/
+agy-home/
+__pycache__/
+*.pyc

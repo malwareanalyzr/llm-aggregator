@@ -1,0 +1,957 @@
+{
+ "generated": "2026-11-22",
+ "tier": "leaderboard-snapshot",
+ "source": "Artificial Analysis (https://artificialanalysis.ai)",
+ "tasks": {
+  "coding": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "agentic": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "science_math": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "knowledge": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "long_document": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "instructions": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "finance": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "legal": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "medical": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "engineering": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "business": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "economics": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  },
+  "general": {
+   "eval": "artificial_analysis_intelligence_index",
+   "ranked": [
+    {
+     "name": "Claude Fable 5.2 Max",
+     "score": 65,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "fable",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Astra Max",
+     "score": 62,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Neon Xhigh",
+     "score": 61,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-neon-xhigh",
+     "effort": null
+    },
+    {
+     "name": "Gemini 4 Carbon High",
+     "score": 60,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Opus 5.5 Max",
+     "score": 59,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "opus",
+     "effort": "max"
+    },
+    {
+     "name": "GPT-6.2 Sol Max",
+     "score": 57,
+     "openrouter": null
+    },
+    {
+     "name": "Claude Sonnet 5.5 Max",
+     "score": 55,
+     "openrouter": null,
+     "route": "sub-claude",
+     "model": "sonnet",
+     "effort": "max"
+    },
+    {
+     "name": "Gemini 4 Hydrogen Xhigh",
+     "score": 54,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-hydrogen-xhigh",
+     "effort": null
+    },
+    {
+     "name": "GPT-6.1 Terra Max",
+     "score": 51,
+     "openrouter": null
+    },
+    {
+     "name": "Gemini 4 Argon High",
+     "score": 50,
+     "openrouter": null,
+     "route": "sub-gemini",
+     "model": "gemini-4-argon-high",
+     "effort": null
+    }
+   ]
+  }
+ },
+ "note": "Seeded from the public AA Intelligence Index leaderboard; run aa_routing.py with AA_API_KEY for per-task evals."
+}
