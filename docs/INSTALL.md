@@ -7,7 +7,7 @@
 | Docker Desktop | https://www.docker.com/products/docker-desktop | `docker info` |
 | Python 3.11+ | https://www.python.org | `python --version` |
 | Node.js 20+ | https://nodejs.org | `node --version` |
-| Ollama | https://ollama.com | `ollama list` |
+| Ollama | https://ollama.com. In Settings, turn **off** "Expose Ollama to the network" (Docker reaches it on loopback) | `ollama list` |
 | Tailscale (optional, for phone access) | `winget install tailscale.tailscale` | `tailscale ip -4` |
 
 ## 2. Subscription CLIs (install what you pay for)
