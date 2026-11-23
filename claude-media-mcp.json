@@ -1,0 +1,6 @@
+{
+  "mcpServers": {
+    "media": {"type": "http", "url": "http://127.0.0.1:8002/mcp", "headers": {"Authorization": "Bearer ${MCP_API_KEY}"}},
+    "elevenlabs": {"type": "http", "url": "http://127.0.0.1:8001/mcp", "headers": {"Authorization": "Bearer ${MCP_API_KEY}"}}
+  }
+}

@@ -14,12 +14,13 @@ def model(name, score, orid=None):
 
 
 filler = [model(f"Other {i}", 10 + i) for i in range(10)]
-# Sub at rank 3 beats API models ranked 1-2
-r = build([model("API One", 90, "a/one"), model("API Two", 85), model("Claude Opus 5.5 High", 80)] + filler)
+# Best sub wins even below API models; other CLIs then API are the fallbacks
+r = build([model("API One", 90, "a/one"), model("API Two", 85), model("Claude Opus 5.5 High", 80),
+           model("Claude Sonnet 5.5", 70), model("Grok 4.6", 50)] + filler)
 c = choose(r, "coding")  # coding falls back to the Intelligence Index on free-tier data
 assert (c["route"], c["model"], c["effort"], c["rank"]) == ("sub-claude", "opus", "high", 3), c
-# No sub in top 3 -> top API model via OpenRouter, best sub kept as fallback
-r = build([model("API One", 90, "a/one"), model("API Two", 85), model("API Three", 84), model("Grok 4.6", 50)] + filler)
-c = choose(r, "general")
-assert c["route"] == "openrouter/a/one" and c["fallback"]["route"] == "sub-grok", c
+assert [f["route"] for f in c["fallbacks"]] == ["sub-grok", "openrouter/a/one"], c["fallbacks"]
+# No sub ranked at all -> API
+r = build([model("API One", 90, "a/one")] + filler)
+assert choose(r, "general")["route"] == "openrouter/a/one"
 print("aa_routing self-check passed")

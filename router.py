@@ -19,6 +19,7 @@ LITELLM = "http://localhost:4000/v1/chat/completions"
 ROUTES = ["sub-claude", "sub-codex", "sub-gemini", "sub-grok", "local-daily", "openrouter-auto", "hf-inference"]
 MODELS = ["smart-router", *ROUTES]
 CLI_TIMEOUT = 300
+MEDIA_TIMEOUT = 960  # video generation waits on Higgsfield (its tool allows 900s)
 SANDBOX = Path(__file__).parent / "sandbox"  # empty cwd for CLIs; nothing worth reading in it
 SANDBOX.mkdir(exist_ok=True)
 
@@ -26,6 +27,9 @@ SANDBOX.mkdir(exist_ok=True)
 CLAUDE_LOCKDOWN = ["--tools", "", "--strict-mcp-config", "--permission-mode", "dontAsk",
                    "--setting-sources", "project",  # skip user settings: no hooks, plugins, allow-rules, auto mode
                    "--disable-slash-commands", "--no-session-persistence"]
+# media mode: sub-claude may use ONLY the hub's own MCP servers (Higgsfield/Grok :8002, ElevenLabs :8001)
+CLAUDE_MEDIA = ["--mcp-config", str(Path(__file__).parent / "claude-media-mcp.json"),
+                "--allowedTools", "mcp__media", "mcp__elevenlabs"]
 CODEX_LOCKDOWN = ["--sandbox", "read-only", "--ephemeral", "--skip-git-repo-check", "-c", "web_search=disabled",
                   *[a for f in ("shell_tool", "unified_exec", "code_mode_host", "apps", "browser_use",
                                 "browser_use_external", "in_app_browser") for a in ("--disable", f)]]
@@ -43,7 +47,7 @@ shutil.copyfile(Path(__file__).parent / "agy-settings.json", _agy_cfg)  # re-ass
 CLASSIFY_PROMPT = """Classify the user's request into ONE task type. Reply ONLY with JSON: {"task": "<name>"}.
 Task types:
 - chat: greetings, small talk, trivial one-line questions (default)
-- media: create/generate an image, picture, video, speech, voice or audio, or check a generation job
+- media: create/generate an image, picture, video, speech, voice or audio, or check a generation/job status
 - coding: writing, debugging, reviewing or refactoring code
 - agentic: multi-step workflows, shell/terminal tasks, automation plans
 - science_math: math, physics, chemistry, biology, quantitative reasoning
@@ -119,16 +123,19 @@ async def classify(messages: list) -> str:
 def plan(task: str) -> dict:
     """Pick the backend for a task from the AA routing table (see aa_routing.choose)."""
     routing = aa_routing.load()
-    # media needs Open WebUI's MCP tools; sub CLIs run tool-free, local-daily can call tools
-    if task in ("chat", "media") or not routing:
-        return {"route": "local-daily", "label": f"task={task}"}
-    c = aa_routing.choose(routing, task)
+    if task == "media":  # sub-claude with only the hub's media MCP tools; API model + Open WebUI tools if it fails
+        return {"route": "sub-claude", "media": True, "name": "Claude", "label": "task=media, hub MCP tools",
+                "fallbacks": [{"route": "openrouter-auto", "name": "openrouter-auto"}]}
+    if not routing:
+        return {"route": "local-daily", "label": f"task={task}, no routing table"}
+    c = aa_routing.choose(routing, "general" if task == "chat" else task)
     ev = routing["tasks"].get(task, routing["tasks"]["general"])["eval"]
     c["label"] = f"{c['name']}, task={task}, AA #{c['rank']} on {ev}"
     return c
 
 
-async def run_cli(args: list[str], stdin: str | None = None, extra_env: dict | None = None) -> str:
+async def run_cli(args: list[str], stdin: str | None = None, extra_env: dict | None = None,
+                  timeout: int = CLI_TIMEOUT) -> str:
     proc = await asyncio.create_subprocess_exec(
         *args,
         cwd=SANDBOX,
@@ -139,10 +146,10 @@ async def run_cli(args: list[str], stdin: str | None = None, extra_env: dict | N
     )
     try:
         out, err = await asyncio.wait_for(
-            proc.communicate(stdin.encode("utf-8") if stdin is not None else None), CLI_TIMEOUT)
+            proc.communicate(stdin.encode("utf-8") if stdin is not None else None), timeout)
     except asyncio.TimeoutError:
         proc.kill()
-        raise RuntimeError(f"{Path(args[0]).name} timed out after {CLI_TIMEOUT}s")
+        raise RuntimeError(f"{Path(args[0]).name} timed out after {timeout}s")
     if proc.returncode != 0:
         raise RuntimeError(f"{Path(args[0]).name} exited {proc.returncode}: {err.decode('utf-8', 'replace')[-2000:]}")
     return out.decode("utf-8", "replace").strip()
@@ -162,7 +169,7 @@ def need(name: str) -> str:
 
 
 async def call_route(route: str, body: dict, model: str | None = None,
-                     effort: str | None = None) -> tuple[str, str, str | None, list | None]:
+                     effort: str | None = None, media: bool = False) -> tuple[str, str, str | None, list | None]:
     """Returns (route_used, assistant_text, note, tool_calls). model/effort select a model on a sub CLI.
     Only LiteLLM routes return tool_calls (Open WebUI runs them); sub CLIs stay tool-free by design."""
     prompt = flatten(body["messages"])
@@ -170,6 +177,11 @@ async def call_route(route: str, body: dict, model: str | None = None,
         sel = [*(["--model", model] if model else []), *(["--effort", effort] if effort else [])]
         # text output: json mode hangs when a tool-less session wants a tool. "--" stops a "-"-prefixed prompt
         # from being parsed as a CLI flag.
+        if media:  # the MCP key reaches claude only via env; claude-media-mcp.json references ${MCP_API_KEY}
+            env = {"MCP_API_KEY": os.getenv("MCP_API_KEY", ""), "MCP_TOOL_TIMEOUT": str(MEDIA_TIMEOUT * 1000)}
+            return route, await run_cli([need("claude"), "-p", "--output-format", "text", *CLAUDE_LOCKDOWN,
+                                         *CLAUDE_MEDIA, *sel, "--", prompt], extra_env=env,
+                                        timeout=MEDIA_TIMEOUT), None, None
         return route, await run_cli([need("claude"), "-p", "--output-format", "text", *CLAUDE_LOCKDOWN, *sel,
                                      "--", prompt]), None, None
     # .cmd shims (codex) and others get the prompt via stdin, keeping user text out of argument parsing
@@ -235,22 +247,22 @@ async def chat(request: Request):
     task = await classify(body["messages"]) if model == "smart-router" else None
     p = plan(task) if task else {"route": model}
     note = tool_calls = None
-    try:
-        used, text, note, tool_calls = await call_route(p["route"], body, p.get("model"), p.get("effort"))
-    except Exception as e:
-        fb = p.get("fallback")
-        if fb:  # API model failed -> best subscription model for this task
-            note = f"{p['route']} failed ({str(e)[:200]}); fell back to {fb['name']}"
-            p = {**fb, "label": f"{fb['name']}, fallback"}
-            try:
-                used, text, _, tool_calls = await call_route(fb["route"], body, fb.get("model"), fb.get("effort"))
-            except Exception as e2:
-                used, text = fb["route"], f"Backend error: {e2}"
-        else:
-            used, text = p["route"], f"Backend error: {e}"
+    errors = []
+    for i, step in enumerate([p, *p.get("fallbacks", [])]):  # subs first, API last (see aa_routing.choose)
+        try:
+            used, text, note, tool_calls = await call_route(step["route"], body, step.get("model"),
+                                                            step.get("effort"), step.get("media", False))
+        except Exception as e:
+            errors.append(f"{step['route']}: {str(e)[:200]}")
+            used, text = step["route"], "Backend error: " + " | ".join(errors)
+            continue
+        if i:
+            note = f"fell back to {step.get('name', step['route'])} after: " + " | ".join(errors)
+            p = {**step, "label": f"{step.get('name', step['route'])}, fallback"}
+        break
     headers = {"X-Router-Route": used}
     if note:
-        headers["X-Router-Note"] = note
+        headers["X-Router-Note"] = " ".join(note.split()).encode("ascii", "replace").decode()[:500]  # header-safe
     label = f" ({p['label']})" if p.get("label") else ""
     # request shape only, never content
     print(f"[chat] model={model} task={task} route={used} fields={sorted(body)} msgs={len(body['messages'])} out_chars={len(text)} tool_calls={len(tool_calls or [])}", flush=True)

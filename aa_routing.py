@@ -90,16 +90,18 @@ def build(models: list[dict], tier: str = "unknown") -> dict:
 
 
 def choose(routing: dict, task: str) -> dict:
-    """Sub in the top 3 wins; otherwise the top API model via OpenRouter, with the best sub as fallback."""
+    """Best-ranked sub wins. Fallbacks: the other sub CLIs in rank order, then the top API model via OpenRouter."""
     ranked = routing["tasks"].get(task, routing["tasks"]["general"])["ranked"]
-    best_sub = next((r for r in ranked if "route" in r), None)
-    top3_sub = next((r for r in ranked[:3] if "route" in r), None)
-    if top3_sub:
-        return {**top3_sub, "rank": ranked.index(top3_sub) + 1}
+    subs, seen = [], set()
+    for i, r in enumerate(ranked):
+        if "route" in r and r["route"] not in seen:  # one entry per CLI: if a CLI fails, its other models will too
+            seen.add(r["route"])
+            subs.append({**r, "rank": i + 1})
     top = ranked[0] if ranked else {}
     api = {"route": f"openrouter/{top['openrouter']}" if top.get("openrouter") else "openrouter-auto",
            "model": None, "effort": None, "name": top.get("name", "openrouter-auto"), "rank": 1}
-    return {**api, "fallback": best_sub}
+    chain = [*subs, api]
+    return {**chain[0], "fallbacks": chain[1:]}
 
 
 def load() -> dict | None:

@@ -31,6 +31,7 @@ flowchart LR
 | `aa_routing.py` | Builds `routing.json` (task → ranked models) from the AA Data API; `choose()` applies the subscription-first rule |
 | `routing.json` | Current routing table. Committed seed comes from the public AA Intelligence Index leaderboard |
 | `media_mcp.py` | FastMCP server: Grok Q&A plus Higgsfield image/video generation |
+| `claude-media-mcp.json` | MCP servers `sub-claude` may use in media mode (hub `:8001`/`:8002` only). The key is filled in from the environment |
 | `agy-settings.json` | Lockdown profile for the router's Antigravity CLI (copied into `agy-home/` on every start) |
 | `start.ps1` / `stop.ps1` | Lifecycle: secrets, Ollama model pull, Docker, background processes, `tailscale serve` |
 
@@ -38,11 +39,14 @@ flowchart LR
 
 1. Open WebUI sends `POST /v1/chat/completions` with the router bearer key.
 2. `classify()` asks `local-fast` (`qwen2.5:3b`) for one task label, returned as JSON. If that fails, the task is `chat`.
-3. `plan()` sends `chat` and `media` (image/video/speech requests) to `local-daily`, the route that can call Open WebUI's MCP tools. Any other task goes to `aa_routing.choose()`:
-   - Rank models by the task's evaluation. Pro-only evals fall back to the Intelligence Index when the data lacks them.
-   - Pick the best subscription model in the top 3, with the CLI model id and effort taken from the AA variant name.
-   - Otherwise pick the top API model as `openrouter/<id>`, keeping the best subscription model as a fallback.
-4. `call_route()` runs the CLI, or forwards the request to LiteLLM.
+3. `plan()`:
+   - Sends `media` (image/video/speech/job status) to `sub-claude` in media mode (see Security model).
+   - Ranks `chat` on the general index.
+   - Sends every other task to `aa_routing.choose()`:
+     - Rank models by the task's evaluation. Pro-only evals fall back to the Intelligence Index when the data lacks them.
+     - The best-ranked subscription model wins, with the CLI model id and effort taken from the AA variant name.
+     - Fallback chain: the other subscription CLIs in rank order, then the top API model as `openrouter/<id>`.
+4. `call_route()` runs the CLI, or forwards the request to LiteLLM. On failure the router moves down the fallback chain and reports the reason in the `X-Router-Note` header.
 5. The reply is prefixed with the route and the reason. If the client asked for streaming, it's returned as a single SSE chunk.
 
 ### Task → evaluation map
@@ -82,6 +86,7 @@ Each CLI runs in an empty `sandbox/` working folder, with `KEY|TOKEN|SECRET|PASS
   - `--setting-sources project`, so no user hooks, plugins or allow-rules load.
   - `ENABLE_CLAUDEAI_MCP_SERVERS=false`, so claude.ai connectors (Gmail, Drive, …) don't load.
   - `--` before the prompt, so a prompt starting with `-` can't inject flags.
+  - Media mode only: `--mcp-config claude-media-mcp.json --allowedTools mcp__media mcp__elevenlabs`. That gives it the hub's Higgsfield, Grok and ElevenLabs tools, and still no file, shell or web access (verified with an `.env` read probe).
 - **codex:** read-only sandbox; shell, exec, code-mode, apps, browser and web search all disabled; ephemeral session.
 - **grok:** only the `todo_write` tool is allowed, plus an explicit deny list and web search off.
 - **agy:** an isolated profile (`agy-home/`) with `toolPermission: strict`, a deny list, and no trusted workspaces. Headless mode auto-denies every tool call. The sign-in comes from the OS keyring.
