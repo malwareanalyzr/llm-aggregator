@@ -223,11 +223,13 @@ async def call_route(route: str, body: dict, model: str | None = None, effort: s
         # from being parsed as a CLI flag.
         allowed = ["--allowedTools", *CLAUDE_TOOLS, *(["mcp__media", "mcp__elevenlabs"] if media else [])]
         args = [need("claude"), "-p", "--output-format", "text", *CLAUDE_LOCKDOWN, *allowed, *sel]
+        # long-lived setup-token, if set, instead of the interactive sign-in that expires
+        env = {"CLAUDE_CODE_OAUTH_TOKEN": t} if (t := os.getenv("CLAUDE_CODE_OAUTH_TOKEN")) else {}
         if media:  # the MCP key reaches claude only via env; claude-media-mcp.json references ${MCP_API_KEY}
-            env = {"MCP_API_KEY": os.getenv("MCP_API_KEY", ""), "MCP_TOOL_TIMEOUT": str(MEDIA_TIMEOUT * 1000)}
+            env |= {"MCP_API_KEY": os.getenv("MCP_API_KEY", ""), "MCP_TOOL_TIMEOUT": str(MEDIA_TIMEOUT * 1000)}
             return route, await run_cli([*args, *CLAUDE_MEDIA_MCP, "--", prompt], extra_env=env,
                                         timeout=MEDIA_TIMEOUT, cwd=work), None, None
-        return route, await run_cli([*args, "--", prompt], cwd=work), None, None
+        return route, await run_cli([*args, "--", prompt], extra_env=env, cwd=work), None, None
     if route == "sub-claude-agent":
         token = os.getenv("CLAUDE_CODE_OAUTH_TOKEN")
         if not token:

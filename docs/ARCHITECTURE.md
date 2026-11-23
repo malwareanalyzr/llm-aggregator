@@ -89,6 +89,7 @@ Each CLI runs in its own `sandbox/req-*` folder, which holds only that request's
   - `--setting-sources project`, so no user hooks, plugins or allow-rules load.
   - `ENABLE_CLAUDEAI_MCP_SERVERS=false`, so claude.ai connectors (Gmail, Drive, …) don't load.
   - `--` before the prompt, so a prompt starting with `-` can't inject flags.
+  - If `CLAUDE_CODE_OAUTH_TOKEN` is set, it's passed to `claude` (and only `claude`) so the long-lived token replaces the expiring sign-in.
   - Media mode only: `--mcp-config claude-media-mcp.json` plus `mcp__media mcp__elevenlabs` in `--allowedTools`. That adds the hub's Higgsfield, Grok and ElevenLabs tools, and still no shell or outside-folder file access.
 - **codex:** read-only sandbox; shell, exec, apps and browser disabled; `web_search=live`; images passed with `-i`; ephemeral session. Code mode stays on because web search runs through it (canary probe: it can't read outside the folder).
 - **grok:** only `todo_write`, `web_search` and `web_fetch` are allowed, plus an explicit deny list. No `read_file`: the canary probe showed it isn't confined to the working folder, so Grok gets no images.

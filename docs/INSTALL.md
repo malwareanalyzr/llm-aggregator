@@ -44,7 +44,7 @@ notepad .env        # fill in OPENROUTER_API_KEY, HF_TOKEN, ELEVENLABS_API_KEY, 
 
 Leave `LITELLM_MASTER_KEY`, `ROUTER_API_KEY` and `MCP_API_KEY` blank. `start.ps1` generates them.
 
-For `sub-claude-agent`, run `claude setup-token` in a normal PowerShell window and paste the token it prints into `.env` as
+For `sub-claude` and `sub-claude-agent`, run `claude setup-token` in a normal PowerShell window and paste the token it prints into `.env` as
 `CLAUDE_CODE_OAUTH_TOKEN=`. Don't paste it into a chat. `start.ps1` builds the agent's Docker image on its first run.
 
 Port 8000 is often taken (Incredibuild, dev servers), so the router uses **8010**.
@@ -97,4 +97,4 @@ curl.exe -s -H "Authorization: Bearer $k" http://127.0.0.1:8010/v1/models
 | `sub-gemini` returns "(no output …)" | Gemini tried a blocked tool (file or shell). Rephrase as a plain question |
 | `sub-claude-agent`: "CLAUDE_CODE_OAUTH_TOKEN not set" | Run `claude setup-token`, add the token to `.env`, restart |
 | Open WebUI shows no models | Check the connection URL and key in Admin → Connections (they're stored in Open WebUI's DB) |
-| Claude warns its sign-in expires | `claude auth login`, or `claude setup-token` for a long-lived token |
+| Claude warns its sign-in expires | Set `CLAUDE_CODE_OAUTH_TOKEN` in `.env` (from `claude setup-token`); `sub-claude` then uses it instead of the expiring sign-in |
