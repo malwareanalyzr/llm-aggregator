@@ -46,21 +46,22 @@ shutil.copyfile(Path(__file__).parent / "agy-settings.json", _agy_cfg)  # re-ass
 
 CLASSIFY_PROMPT = """Classify the user's request into ONE task type. Reply ONLY with JSON: {"task": "<name>"}.
 Task types:
-- chat: greetings, small talk, trivial one-line questions (default)
+- chat: ONLY greetings, thanks or small talk with no real question or task
 - media: create/generate an image, picture, video, speech, voice or audio, or check a generation/job status
 - coding: writing, debugging, reviewing or refactoring code
-- agentic: multi-step workflows, shell/terminal tasks, automation plans
+- agentic: running shell/terminal commands or automation scripts, or testing/operating software systems
 - science_math: math, physics, chemistry, biology, quantitative reasoning
 - knowledge: factual questions where accuracy and not hallucinating matter
 - long_document: summarizing or answering questions about long pasted text
-- instructions: strict formatting or constraint-following output
-- finance: accounting, financial analysis, investing
+- instructions: requests whose main point is an exact format or constraint (word/bullet limits, templates)
+- finance: accounting, valuation (DCF), financial models/statements, budgeting, investing, markets
 - legal: law, contracts, compliance
 - medical: health, medicine, clinical questions
-- engineering: non-software engineering and technical design
-- business: strategy, operations, management, marketing
-- economics: economics and policy
+- engineering: mechanical/electrical/civil/chemical engineering and physical system design (not software, not finance)
+- business: strategy, operations, management, marketing, sales
+- economics: economics, trade, tariffs, inflation, monetary or fiscal policy
 - general: anything substantive not covered above"""
+CLASSIFY_MODEL = "local-daily"  # qwen3:8b labels 16/17 test prompts right vs 11/17 for qwen2.5:3b
 TASK_NAMES = {"chat", "media", *aa_routing.TASKS}
 
 app = FastAPI()
@@ -109,10 +110,11 @@ async def classify(messages: list) -> str:
     last = next((text_of(m.get("content")) for m in reversed(messages) if m.get("role") == "user"), "")
     try:
         data = await litellm({
-            "model": "local-fast",
+            "model": CLASSIFY_MODEL,
             "messages": [{"role": "system", "content": CLASSIFY_PROMPT}, {"role": "user", "content": last[:4000]}],
             "response_format": {"type": "json_object"},
             "temperature": 0,
+            "think": False,  # qwen3: label only, no reasoning pass (377 -> 7 output tokens)
         })
         task = json.loads(data["choices"][0]["message"]["content"]).get("task")
         return task if task in TASK_NAMES else "chat"

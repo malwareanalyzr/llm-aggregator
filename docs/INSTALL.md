@@ -73,8 +73,8 @@ Bookmark `https://<your-machine>.<your-tailnet>.ts.net`; `start.ps1` prints the 
 
 ## 7. Routing data
 
-Get a free Artificial Analysis key at https://artificialanalysis.ai/api-key-management-redirect, put it in `.env` as
-`AA_API_KEY`, and restart. `routing.json` is then rebuilt from live AA data. A Pro key unlocks the per-task evaluations.
+Nothing to do: `start.ps1` rebuilds `routing.json` from the public Artificial Analysis models page on every start.
+`AA_API_KEY` is used only if that page can't be read. Get one at https://artificialanalysis.ai/api-key-management-redirect.
 
 ## Verify
 

@@ -38,13 +38,13 @@ How it works and the security model: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md
 
 ## Routing rule
 
-1. A local model (`qwen2.5:3b`) labels the prompt with a task type: coding, science_math, finance, legal, chat, and so on.
+1. A local model (`qwen3:8b`, thinking off, under 1 s) labels the prompt with a task type: coding, science_math, finance, legal, chat, and so on.
 2. Each task type maps to the Artificial Analysis evaluation that measures it, for example coding → FrontierCode / Terminal-Bench.
 3. The best-ranked **subscription** model for that evaluation wins, run at its benchmarked effort level. This applies to every task, including chat.
 4. If that CLI fails, the router tries your other subscription CLIs in rank order. Only if every one fails does it use the top API model through OpenRouter.
 5. `media` requests (image, video, speech) go to `sub-claude`. There it can use only the hub's own Higgsfield and ElevenLabs MCP tools.
 
-`python aa_routing.py` refreshes `routing.json` from the AA Data API. It needs `AA_API_KEY`; `start.ps1` runs it automatically when the key is set.
+`python aa_routing.py` refreshes `routing.json` from the public AA models page (every benchmark and domain index, no key needed), with the AA Data API (`AA_API_KEY`) as a fallback. `start.ps1` runs it on every start.
 
 ## Attribution
 

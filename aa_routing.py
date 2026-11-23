@@ -1,6 +1,7 @@
 """Task -> model routing table built from Artificial Analysis evaluations.
 
-Run `python aa_routing.py` to refresh routing.json from the AA Data API (needs AA_API_KEY in .env).
+Run `python aa_routing.py` to refresh routing.json. Source: the public artificialanalysis.ai/models page, which carries
+every benchmark and domain index; the AA Data API (AA_API_KEY) is the fallback (its free tier lacks per-benchmark data).
 Data: Artificial Analysis, https://artificialanalysis.ai (attribution required by their terms).
 """
 import json
@@ -12,6 +13,20 @@ from pathlib import Path
 
 ROUTING_FILE = Path(__file__).parent / "routing.json"
 AA_BASE = "https://artificialanalysis.ai/api/v2/language/models"
+AA_PUBLIC = "https://artificialanalysis.ai/models"
+# public page field -> Data API evaluation key used in TASKS
+PUBLIC_FIELDS = {
+    "intelligenceIndex": "artificial_analysis_intelligence_index", "frontierCode20": "frontiercode_v2_0",
+    "terminalBench40": "terminalbench_v4_0", "tauBanking": "tau_banking", "automationBenchPartialScore": "automationbench_aa",
+    "critptAgenticHard": "critpt_v2_hard", "terminalBenchScience": "terminalbench_science", "hleDiamond": "hle_diamond",
+    "omniscience": "aa_omniscience_index", "gdpPdfAllPass": "gdp_pdf", "lcr": "aa_lcr", "ifbench": "ifbench",
+}
+PUBLIC_CAPABILITIES = {
+    "financeAndAccounting": "artificial_analysis_finance_and_accounting_index", "legal": "artificial_analysis_legal_index",
+    "healthcareAndMedical": "artificial_analysis_healthcare_and_medical_index",
+    "engineering": "artificial_analysis_engineering_index", "strategyAndOps": "artificial_analysis_strategy_and_ops_index",
+    "economics": "artificial_analysis_economics_index",
+}
 GENERAL = "artificial_analysis_intelligence_index"
 
 # Task -> AA evaluation keys, best first. Pro-only keys fall back to the next key, then the Intelligence Index.
@@ -61,9 +76,8 @@ def sub_for(aa_name: str):
     n = norm(aa_name)
     for base, route, model, efforts in SUB_MODELS:
         if n == base or n.startswith(base + " "):
-            effort = n[len(base):].split()[-1] if n != base else None
-            if effort not in EFFORTS:
-                effort = None
+            # first effort word after the base: "max" in "Claude Fable 5.2 (Max, Default Fallback)"
+            effort = next((w for w in n[len(base):].replace(",", " ").split() if w in EFFORTS), None)
             if effort and effort not in efforts:  # e.g. AA "Max" on a CLI that tops out at xhigh
                 effort = efforts[-1]
             if route == "sub-gemini":  # agy encodes effort in the model slug
@@ -78,7 +92,9 @@ def build(models: list[dict], tier: str = "unknown") -> dict:
         key = next((k for k in keys + [GENERAL]
                     if sum(1 for m in models if (m.get("evaluations") or {}).get(k) is not None) >= MIN_COVERAGE), GENERAL)
         ranked = sorted((m for m in models if (m.get("evaluations") or {}).get(key) is not None),
-                        key=lambda m: m["evaluations"][key], reverse=True)[:10]
+                        key=lambda m: m["evaluations"][key], reverse=True)
+        # top 10, plus every sub-runnable model below it so the fallback chain covers all subs before the API
+        ranked = ranked[:10] + [m for m in ranked[10:] if sub_for(m["name"])]
         rows = []
         for m in ranked:
             sub = sub_for(m["name"])
@@ -111,6 +127,30 @@ def load() -> dict | None:
         return None
 
 
+def parse_public(html: str) -> list[dict]:
+    """Model records from the page's embedded Next.js payload, reshaped like Data API rows."""
+    chunks = re.findall(r'self\.__next_f\.push\(\[1,"((?:[^"\\]|\\.)*)"\]\)', html)
+    payload = "".join(json.loads(f'"{c}"') for c in chunks)
+    i = payload.index('"initialModels":') + len('"initialModels":')
+    rows, _ = json.JSONDecoder().raw_decode(payload, i)
+    out = []
+    for r in rows:
+        ev = {key: r.get(f) for f, key in PUBLIC_FIELDS.items()}
+        ev |= {key: (r.get("capabilities") or {}).get(f) for f, key in PUBLIC_CAPABILITIES.items()}
+        out.append({"name": r["name"], "openrouter_api_id": None, "evaluations": ev})
+    return out
+
+
+def fetch_public() -> list[dict]:
+    import httpx
+    r = httpx.get(AA_PUBLIC, headers={"User-Agent": "Mozilla/5.0"}, timeout=60, follow_redirects=True)
+    r.raise_for_status()
+    models = parse_public(r.text)
+    if len(models) < MIN_COVERAGE:
+        raise RuntimeError(f"only {len(models)} models parsed from {AA_PUBLIC}")
+    return models
+
+
 def fetch(key: str) -> tuple[list[dict], str]:
     import httpx
     for url in (AA_BASE, AA_BASE + "/free"):  # Pro has per-benchmark evals; Free only headline/domain indices
@@ -131,9 +171,12 @@ def fetch(key: str) -> tuple[list[dict], str]:
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv(Path(__file__).parent / ".env")
-    key = os.getenv("AA_API_KEY")
-    if not key:
-        sys.exit("AA_API_KEY not set in .env; keeping existing routing.json")
-    models, tier = fetch(key)
+    try:
+        models, tier = fetch_public(), "public-models-page"
+    except Exception as e:
+        key = os.getenv("AA_API_KEY")
+        if not key:
+            sys.exit(f"public AA page failed ({e}) and AA_API_KEY not set; keeping existing routing.json")
+        models, tier = fetch(key)
     ROUTING_FILE.write_text(json.dumps(build(models, tier), indent=1))
     print(f"routing.json refreshed from {len(models)} AA models ({tier} tier)")

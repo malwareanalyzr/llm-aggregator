@@ -28,8 +28,8 @@ flowchart LR
 | `docker-compose.yml` | Open WebUI and LiteLLM containers, both published on loopback only |
 | `litellm_config.yaml` | Model aliases: `local-fast`, `local-daily`, `openrouter-auto`, `openrouter/*`, `hf-inference` |
 | `router.py` | FastAPI OpenAI-compatible API (`/v1/models`, `/v1/chat/completions`, `/health`). Classifies, plans and dispatches each request |
-| `aa_routing.py` | Builds `routing.json` (task → ranked models) from the AA Data API; `choose()` applies the subscription-first rule |
-| `routing.json` | Current routing table. Committed seed comes from the public AA Intelligence Index leaderboard |
+| `aa_routing.py` | Builds `routing.json` (task → ranked models) from the public AA models page (Data API as fallback); `choose()` applies the subscription-first rule |
+| `routing.json` | Current routing table. Rebuilt on every start |
 | `media_mcp.py` | FastMCP server: Grok Q&A plus Higgsfield image/video generation |
 | `claude-media-mcp.json` | MCP servers `sub-claude` may use in media mode (hub `:8001`/`:8002` only). The key is filled in from the environment |
 | `agy-settings.json` | Lockdown profile for the router's Antigravity CLI (copied into `agy-home/` on every start) |
@@ -38,7 +38,7 @@ flowchart LR
 ## Request flow (`smart-router`)
 
 1. Open WebUI sends `POST /v1/chat/completions` with the router bearer key.
-2. `classify()` asks `local-fast` (`qwen2.5:3b`) for one task label, returned as JSON. If that fails, the task is `chat`.
+2. `classify()` asks `local-daily` (`qwen3:8b`, `think: false`) for one task label, returned as JSON. If that fails, the task is `chat`.
 3. `plan()`:
    - Sends `media` (image/video/speech/job status) to `sub-claude` in media mode (see Security model).
    - Ranks `chat` on the general index.
@@ -62,7 +62,7 @@ flowchart LR
 | finance / legal / medical / engineering / business / economics | matching `artificial_analysis_*_index` |
 | general | `artificial_analysis_intelligence_index` |
 
-Per-benchmark keys need an AA **Pro** key. A free key provides the Intelligence Index and the six domain indices.
+The public models page carries every key above except `ifbench`, so `instructions` currently ranks on the Intelligence Index. Through the Data API, per-benchmark keys need a **Pro** key; the free tier has only the Intelligence Index and the domain indices.
 
 Subscription models are listed in `SUB_MODELS` in `aa_routing.py`. Add a row when a CLI gains a model.
 

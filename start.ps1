@@ -36,9 +36,8 @@ function Start-Bg($name, $exe, $argList) {
     Add-Content $pidFile "$name=$($p.Id)"
     Write-Host "started $name (pid $($p.Id))"
 }
-if ($env:AA_API_KEY) {  # refresh the Artificial Analysis routing table (1 of 100 free daily requests)
-    & "$venv\python.exe" aa_routing.py; if ($LASTEXITCODE -ne 0) { Write-Host 'AA refresh failed; using existing routing.json' -ForegroundColor Yellow }
-}
+# refresh the Artificial Analysis routing table (public models page; AA_API_KEY is the fallback)
+& "$venv\python.exe" aa_routing.py; if ($LASTEXITCODE -ne 0) { Write-Host 'AA refresh failed; using existing routing.json' -ForegroundColor Yellow }
 Start-Bg 'router' "$venv\python.exe" 'router.py'
 Start-Bg 'media_mcp' "$venv\python.exe" 'media_mcp.py'
 Start-Bg 'elevenlabs' 'npx.cmd' "-y supergateway --stdio `"uvx elevenlabs-mcp`" --port 8001 --host 127.0.0.1 --apiKey $env:MCP_API_KEY --outputTransport streamableHttp"

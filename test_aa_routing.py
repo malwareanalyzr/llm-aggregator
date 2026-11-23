@@ -2,6 +2,7 @@
 from aa_routing import build, choose, sub_for
 
 assert sub_for("Claude Fable 5.2 Max") == ("sub-claude", "fable", "max")
+assert sub_for("Claude Fable 5.2 (Max, Default Fallback)") == ("sub-claude", "fable", "max")  # public-page naming
 assert sub_for("Gemini 4 Neon (Xhigh)") == ("sub-gemini", "gemini-4-neon-xhigh", None)
 assert sub_for("Gemini 4 Argon Max") == ("sub-gemini", "gemini-4-argon-high", None)  # clamps to CLI max
 assert sub_for("GPT-6.2 Astra Max") is None  # desktop-only, not in codex CLI
