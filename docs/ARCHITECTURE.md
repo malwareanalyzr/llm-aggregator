@@ -38,7 +38,7 @@ flowchart LR
 
 1. Open WebUI sends `POST /v1/chat/completions` with the router bearer key.
 2. `classify()` asks `local-fast` (`qwen2.5:3b`) for one task label, returned as JSON. If that fails, the task is `chat`.
-3. `plan()` sends `chat` to `local-daily`. Any other task goes to `aa_routing.choose()`:
+3. `plan()` sends `chat` and `media` (image/video/speech requests) to `local-daily`, the route that can call Open WebUI's MCP tools. Any other task goes to `aa_routing.choose()`:
    - Rank models by the task's evaluation. Pro-only evals fall back to the Intelligence Index when the data lacks them.
    - Pick the best subscription model in the top 3, with the CLI model id and effort taken from the AA variant name.
    - Otherwise pick the top API model as `openrouter/<id>`, keeping the best subscription model as a fallback.

@@ -42,7 +42,7 @@ How it works and the security model: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md
 2. Each task type maps to the Artificial Analysis evaluation that measures it, for example coding → FrontierCode / Terminal-Bench.
 3. If a subscription model is in the **top 3** for that evaluation, the best-ranked one wins, run at the benchmarked effort level.
 4. Otherwise the top API model is used through OpenRouter. If that call fails, the router falls back to the best subscription model.
-5. `chat` always stays on the free local model.
+5. `chat` and `media` (image, video, speech) always stay on the free local model, which can call the Higgsfield and ElevenLabs tools.
 
 `python aa_routing.py` refreshes `routing.json` from the AA Data API. It needs `AA_API_KEY`; `start.ps1` runs it automatically when the key is set.
 

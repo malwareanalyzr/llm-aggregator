@@ -43,6 +43,7 @@ shutil.copyfile(Path(__file__).parent / "agy-settings.json", _agy_cfg)  # re-ass
 CLASSIFY_PROMPT = """Classify the user's request into ONE task type. Reply ONLY with JSON: {"task": "<name>"}.
 Task types:
 - chat: greetings, small talk, trivial one-line questions (default)
+- media: create/generate an image, picture, video, speech, voice or audio, or check a generation job
 - coding: writing, debugging, reviewing or refactoring code
 - agentic: multi-step workflows, shell/terminal tasks, automation plans
 - science_math: math, physics, chemistry, biology, quantitative reasoning
@@ -56,7 +57,7 @@ Task types:
 - business: strategy, operations, management, marketing
 - economics: economics and policy
 - general: anything substantive not covered above"""
-TASK_NAMES = {"chat", *aa_routing.TASKS}
+TASK_NAMES = {"chat", "media", *aa_routing.TASKS}
 
 app = FastAPI()
 
@@ -118,7 +119,8 @@ async def classify(messages: list) -> str:
 def plan(task: str) -> dict:
     """Pick the backend for a task from the AA routing table (see aa_routing.choose)."""
     routing = aa_routing.load()
-    if task == "chat" or not routing:
+    # media needs Open WebUI's MCP tools; sub CLIs run tool-free, local-daily can call tools
+    if task in ("chat", "media") or not routing:
         return {"route": "local-daily", "label": f"task={task}"}
     c = aa_routing.choose(routing, task)
     ev = routing["tasks"].get(task, routing["tasks"]["general"])["eval"]
