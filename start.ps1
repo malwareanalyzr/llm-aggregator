@@ -29,6 +29,9 @@ if (-not (ollama list | Select-String 'qwen2.5:3b')) { ollama pull qwen2.5:3b }
 # Docker
 docker compose up -d
 if ($LASTEXITCODE -ne 0) { throw 'docker compose up failed (is Docker Desktop running?)' }
+# sub-claude-agent image; built from stdin so no build context (and no .env) reaches Docker
+docker image inspect ai-hub-agent *> $null
+if ($LASTEXITCODE -ne 0) { Get-Content Dockerfile.agent -Raw | docker build -t ai-hub-agent - }
 
 function Start-Bg($name, $exe, $argList) {
     $p = Start-Process -FilePath $exe -ArgumentList $argList -WindowStyle Hidden -PassThru `

@@ -3,7 +3,7 @@
   "allowNonWorkspaceAccess": false,
   "disableSlashCommands": true,
   "permissions": {
-    "deny": ["read_file", "write_file", "edit_file", "run_command", "search_web", "schedule",
+    "deny": ["read_file", "write_file", "edit_file", "run_command", "schedule",
              "define_subagent", "invoke_subagent", "manage_subagents", "send_message", "run_workflow", "swarm"]
   }
 }

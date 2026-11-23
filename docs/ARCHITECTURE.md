@@ -32,6 +32,8 @@ flowchart LR
 | `routing.json` | Current routing table. Rebuilt on every start |
 | `media_mcp.py` | FastMCP server: Grok Q&A plus Higgsfield image/video generation |
 | `claude-media-mcp.json` | MCP servers `sub-claude` may use in media mode (hub `:8001`/`:8002` only). The key is filled in from the environment |
+| `Dockerfile.agent` | Image for `sub-claude-agent`: Claude Code as a non-root user. `start.ps1` builds it from stdin, so `.env` never enters the build context |
+| `workspace/` | The only host folder `sub-claude-agent` can see (gitignored). Uploads land in `workspace/uploads/<request>/` |
 | `agy-settings.json` | Lockdown profile for the router's Antigravity CLI (copied into `agy-home/` on every start) |
 | `start.ps1` / `stop.ps1` | Lifecycle: secrets, Ollama model pull, Docker, background processes, `tailscale serve` |
 
@@ -46,7 +48,8 @@ flowchart LR
      - Rank models by the task's evaluation. Pro-only evals fall back to the Intelligence Index when the data lacks them.
      - The best-ranked subscription model wins, with the CLI model id and effort taken from the AA variant name.
      - Fallback chain: the other subscription CLIs in rank order, then the top API model as `openrouter/<id>`.
-4. `call_route()` runs the CLI, or forwards the request to LiteLLM. On failure the router moves down the fallback chain and reports the reason in the `X-Router-Note` header.
+4. Uploaded images (base64 data URLs, png/jpeg/gif/webp, max 20 MB each) are written to a fresh `sandbox/req-*` folder, which becomes the CLI's working folder and is deleted after the reply.
+   `call_route()` runs the CLI, or forwards the request to LiteLLM. On failure the router moves down the fallback chain and reports the reason in the `X-Router-Note` header.
 5. The reply is prefixed with the route and the reason. If the client asked for streaming, it's returned as a single SSE chunk.
 
 ### Task → evaluation map
@@ -80,18 +83,24 @@ The router can spend your subscriptions and the MCP server can spend Higgsfield 
 - `media_mcp.py` also enforces a DNS-rebinding Host allow-list.
 
 **CLI lockdown**
-Each CLI runs in an empty `sandbox/` working folder, with `KEY|TOKEN|SECRET|PASSWORD` environment variables removed. Each was verified with a canary-file probe.
+Each CLI runs in its own `sandbox/req-*` folder, which holds only that request's uploaded images, with `KEY|TOKEN|SECRET|PASSWORD` environment variables removed. Every CLI may search and fetch the web. None may run a shell, write files or read outside its folder. Each was verified with a canary file outside the folder.
 - **claude:**
-  - `--tools ""`, `--strict-mcp-config`, and `--permission-mode dontAsk`.
+  - `--restricted` (confines `Read` to the request folder), `--tools Read WebSearch WebFetch`, `--strict-mcp-config`, and `--permission-mode dontAsk`.
   - `--setting-sources project`, so no user hooks, plugins or allow-rules load.
   - `ENABLE_CLAUDEAI_MCP_SERVERS=false`, so claude.ai connectors (Gmail, Drive, …) don't load.
   - `--` before the prompt, so a prompt starting with `-` can't inject flags.
-  - Media mode only: `--mcp-config claude-media-mcp.json --allowedTools mcp__media mcp__elevenlabs`. That gives it the hub's Higgsfield, Grok and ElevenLabs tools, and still no file, shell or web access (verified with an `.env` read probe).
-- **codex:** read-only sandbox; shell, exec, code-mode, apps, browser and web search all disabled; ephemeral session.
-- **grok:** only the `todo_write` tool is allowed, plus an explicit deny list and web search off.
-- **agy:** an isolated profile (`agy-home/`) with `toolPermission: strict`, a deny list, and no trusted workspaces. Headless mode auto-denies every tool call. The sign-in comes from the OS keyring.
+  - Media mode only: `--mcp-config claude-media-mcp.json` plus `mcp__media mcp__elevenlabs` in `--allowedTools`. That adds the hub's Higgsfield, Grok and ElevenLabs tools, and still no shell or outside-folder file access.
+- **codex:** read-only sandbox; shell, exec, apps and browser disabled; `web_search=live`; images passed with `-i`; ephemeral session. Code mode stays on because web search runs through it (canary probe: it can't read outside the folder).
+- **grok:** only `todo_write`, `web_search` and `web_fetch` are allowed, plus an explicit deny list. No `read_file`: the canary probe showed it isn't confined to the working folder, so Grok gets no images.
+- **agy:** an isolated profile (`agy-home/`) with `toolPermission: strict`, a deny list (everything but web search), and no trusted workspaces. Strict mode denies `read_file` even with an allow rule, so Gemini gets no images. The sign-in comes from the OS keyring.
+- **sub-claude-agent:** full Claude Code tools (`bypassPermissions`), fenced by Docker rather than by the CLI. Claude's own Bash sandbox is off on Windows: in the canary probe, `--restricted` blocked `Read` but a shell `type` still read the file.
+  - The container mounts only `workspace/` and runs as a non-root user, with all capabilities dropped, `no-new-privileges`, 512 processes and 4 GB of memory. It is removed after each request and stopped after 30 minutes.
+  - `host.docker.internal` resolves to the container itself. It has internet access for web tools.
+  - It authenticates with `CLAUDE_CODE_OAUTH_TOKEN` (from `claude setup-token`), passed only to this container. Anything running inside could read that token.
 - **higgsfield:** called through `node` rather than the npm `.cmd` shim, so prompts never pass through `cmd.exe` parsing. Model, aspect-ratio and job-id inputs are checked against an allow-list pattern, and duration is limited to 1–30 seconds.
 
 **Known limits**
+- Web access means a fetched page can carry prompt-injection text. The CLIs hold nothing worth stealing except the conversation itself; `sub-claude-agent` can also reach `workspace/` and its own token.
+- `sub-claude-agent` can still reach the host through Docker Desktop's gateway IP. Every hub service there needs a key, except Ollama.
 - Sub CLIs still carry each provider's own user memory and instructions. For example, `claude` loads your global CLAUDE.md.
 - Open WebUI keeps its settings in its database after first boot. Changing env vars later doesn't update them; change them in Admin Settings.

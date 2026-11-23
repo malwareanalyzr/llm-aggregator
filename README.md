@@ -15,6 +15,7 @@ Built for Windows with Docker Desktop. Remote access goes through Tailscale (tai
 | `sub-codex` | `codex` CLI (ChatGPT login) | ChatGPT subscription |
 | `sub-gemini` | `agy` Antigravity CLI (Google login) | Antigravity / Gemini subscription |
 | `sub-grok` | `grok` CLI (xAI login) | SuperGrok subscription |
+| `sub-claude-agent` | Claude Code with shell and file tools, in a Docker container that sees only `workspace/`. Pick it manually; `smart-router` never does | Claude subscription |
 | `local-daily` | Ollama `qwen3:8b` | free / local |
 | `openrouter-auto` | OpenRouter auto-router | API spend |
 | `hf-inference` | Hugging Face Inference | API spend |
@@ -43,6 +44,9 @@ How it works and the security model: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md
 3. The best-ranked **subscription** model for that evaluation wins, run at its benchmarked effort level. This applies to every task, including chat.
 4. If that CLI fails, the router tries your other subscription CLIs in rank order. Only if every one fails does it use the top API model through OpenRouter.
 5. `media` requests (image, video, speech) go to `sub-claude`. There it can use only the hub's own Higgsfield and ElevenLabs MCP tools.
+6. Images uploaded in Open WebUI reach `sub-claude` and `sub-codex`. `sub-grok` and `sub-gemini` can't read them, so a request with images skips to the next model in the chain.
+
+All four subscription CLIs can search and fetch the web. None of them can run shell commands, write files, or read files outside the request's own folder.
 
 `python aa_routing.py` refreshes `routing.json` from the public AA models page (every benchmark and domain index, no key needed), with the AA Data API (`AA_API_KEY`) as a fallback. `start.ps1` runs it on every start.
 
