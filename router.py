@@ -160,24 +160,25 @@ def need(name: str) -> str:
 
 
 async def call_route(route: str, body: dict, model: str | None = None,
-                     effort: str | None = None) -> tuple[str, str, str | None]:
-    """Returns (route_actually_used, assistant_text, note). model/effort select a specific model on a sub CLI."""
+                     effort: str | None = None) -> tuple[str, str, str | None, list | None]:
+    """Returns (route_used, assistant_text, note, tool_calls). model/effort select a model on a sub CLI.
+    Only LiteLLM routes return tool_calls (Open WebUI runs them); sub CLIs stay tool-free by design."""
     prompt = flatten(body["messages"])
     if route == "sub-claude":
         sel = [*(["--model", model] if model else []), *(["--effort", effort] if effort else [])]
         # text output: json mode hangs when a tool-less session wants a tool. "--" stops a "-"-prefixed prompt
         # from being parsed as a CLI flag.
         return route, await run_cli([need("claude"), "-p", "--output-format", "text", *CLAUDE_LOCKDOWN, *sel,
-                                     "--", prompt]), None
+                                     "--", prompt]), None, None
     # .cmd shims (codex) and others get the prompt via stdin, keeping user text out of argument parsing
     if route == "sub-codex":
         sel = [*(["-m", model] if model else []), *(["-c", f"model_reasoning_effort={effort}"] if effort else [])]
         return route, await run_cli([need("codex"), "exec", *CODEX_LOCKDOWN, *sel, "-C", str(SANDBOX), "-"],
-                                    stdin=prompt), None
+                                    stdin=prompt), None, None
     if route == "sub-grok":
         sel = [*(["-m", model] if model else []), *(["--reasoning-effort", effort] if effort else [])]
         return route, await run_cli([need("grok"), "-p", "--cwd", str(SANDBOX), *GROK_LOCKDOWN, *sel],
-                                    stdin=prompt), None
+                                    stdin=prompt), None, None
     if route == "sub-gemini":
         exe = agy_cli()
         if exe:
@@ -186,25 +187,27 @@ async def call_route(route: str, body: dict, model: str | None = None,
                                            extra_env={"USERPROFILE": AGY_HOME, "HOME": AGY_HOME}))
             if out.get("status") != "SUCCESS":
                 raise RuntimeError(f"agy {out.get('status')}: {out.get('error')}")
-            return route, out.get("response") or "(no output: Gemini tried a tool, which this hub blocks)", None
+            return route, out.get("response") or "(no output: Gemini tried a tool, which this hub blocks)", None, None
         route, note = "openrouter-auto", "sub-gemini unavailable (agy not installed); fell back to openrouter-auto"
         try:
-            _, text, _ = await call_route(route, body)
+            _, text, _, tool_calls = await call_route(route, body)
         except Exception as e:
             raise RuntimeError(f"{note}, which failed: {e}") from e
-        return route, text, note
+        return route, text, note, tool_calls
     passthrough = {k: v for k, v in body.items() if k not in ("model", "stream", "stream_options")}
     data = await litellm({**passthrough, "model": route})
-    return route, data["choices"][0]["message"]["content"] or "", None
+    msg = data["choices"][0]["message"]
+    return route, msg.get("content") or "", None, msg.get("tool_calls")
 
 
-def completion(model: str, text: str) -> dict:
+def completion(model: str, text: str, tool_calls: list | None = None) -> dict:
+    msg = {"role": "assistant", "content": text, **({"tool_calls": tool_calls} if tool_calls else {})}
     return {
         "id": f"chatcmpl-{uuid.uuid4().hex}",
         "object": "chat.completion",
         "created": int(time.time()),
         "model": model,
-        "choices": [{"index": 0, "message": {"role": "assistant", "content": text}, "finish_reason": "stop"}],
+        "choices": [{"index": 0, "message": msg, "finish_reason": "tool_calls" if tool_calls else "stop"}],
     }
 
 
@@ -227,17 +230,18 @@ async def chat(request: Request):
     if model not in MODELS:
         return JSONResponse({"error": {"message": f"unknown model {model}"}}, status_code=400)
 
-    p = plan(await classify(body["messages"])) if model == "smart-router" else {"route": model}
-    note = None
+    task = await classify(body["messages"]) if model == "smart-router" else None
+    p = plan(task) if task else {"route": model}
+    note = tool_calls = None
     try:
-        used, text, note = await call_route(p["route"], body, p.get("model"), p.get("effort"))
+        used, text, note, tool_calls = await call_route(p["route"], body, p.get("model"), p.get("effort"))
     except Exception as e:
         fb = p.get("fallback")
         if fb:  # API model failed -> best subscription model for this task
             note = f"{p['route']} failed ({str(e)[:200]}); fell back to {fb['name']}"
             p = {**fb, "label": f"{fb['name']}, fallback"}
             try:
-                used, text, _ = await call_route(fb["route"], body, fb.get("model"), fb.get("effort"))
+                used, text, _, tool_calls = await call_route(fb["route"], body, fb.get("model"), fb.get("effort"))
             except Exception as e2:
                 used, text = fb["route"], f"Backend error: {e2}"
         else:
@@ -246,18 +250,23 @@ async def chat(request: Request):
     if note:
         headers["X-Router-Note"] = note
     label = f" ({p['label']})" if p.get("label") else ""
+    # request shape only, never content
+    print(f"[chat] model={model} task={task} route={used} fields={sorted(body)} msgs={len(body['messages'])} out_chars={len(text)} tool_calls={len(tool_calls or [])}", flush=True)
     text = f"*[Routed via {used}{label}]*\n\n{text}"
 
     if not body.get("stream"):
-        return JSONResponse(completion(model, text), headers=headers)
+        return JSONResponse(completion(model, text, tool_calls), headers=headers)
 
     # shortcut: backends are called non-streaming; we emit the full reply as one SSE chunk.
     async def sse():
         chunk = completion(model, "")
         chunk["object"] = "chat.completion.chunk"
-        chunk["choices"] = [{"index": 0, "delta": {"role": "assistant", "content": text}, "finish_reason": None}]
+        delta = {"role": "assistant", "content": text}
+        if tool_calls:  # streamed tool_calls carry an index per call
+            delta["tool_calls"] = [{"index": i, **tc} for i, tc in enumerate(tool_calls)]
+        chunk["choices"] = [{"index": 0, "delta": delta, "finish_reason": None}]
         yield f"data: {json.dumps(chunk)}\n\n"
-        chunk["choices"] = [{"index": 0, "delta": {}, "finish_reason": "stop"}]
+        chunk["choices"] = [{"index": 0, "delta": {}, "finish_reason": "tool_calls" if tool_calls else "stop"}]
         yield f"data: {json.dumps(chunk)}\n\ndata: [DONE]\n\n"
 
     return StreamingResponse(sse(), media_type="text/event-stream", headers=headers)

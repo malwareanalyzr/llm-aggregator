@@ -1,12 +1,12 @@
 model_list:
   - model_name: local-fast
     litellm_params:
-      model: ollama/qwen2.5:3b
+      model: ollama_chat/qwen2.5:3b
       api_base: http://host.docker.internal:11434
 
   - model_name: local-daily
     litellm_params:
-      model: ollama/qwen3:8b
+      model: ollama_chat/qwen3:8b
       api_base: http://host.docker.internal:11434
 
   - model_name: openrouter-auto

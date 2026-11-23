@@ -24,6 +24,7 @@ services:
       - ENABLE_TOOL_SERVERS=true
       - ENABLE_OLLAMA_API=false
       - ENABLE_SIGNUP=false
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}   # fixed key so restarts don't sign everyone out
     volumes:
       - open-webui-data:/app/backend/data
     extra_hosts:

@@ -7,7 +7,7 @@ if (Test-Path $pidFile) { Write-Host 'Already running? Run .\stop.ps1 first.' -F
 
 # .env: create, generate local secrets once, lock the file to the current user
 if (-not (Test-Path .env)) { Copy-Item .env.example .env }
-foreach ($name in 'LITELLM_MASTER_KEY', 'ROUTER_API_KEY', 'MCP_API_KEY') {
+foreach ($name in 'LITELLM_MASTER_KEY', 'ROUTER_API_KEY', 'MCP_API_KEY', 'WEBUI_SECRET_KEY') {
     if (-not (Select-String -Path .env -Pattern "^$name=sk-" -Quiet)) {
         $b = New-Object byte[] 32; [Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b)
         $k = 'sk-' + -join ($b | ForEach-Object { '{0:x2}' -f $_ })
